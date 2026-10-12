@@ -59,7 +59,7 @@ abstract class UnifiedTeleOpKt : LinearOpMode() {
         for (clazz in classes){
             telemetry.addData(clazz.simpleName + " Loaded", false)
             // Instantiate each
-            val mech = (clazz.companionObjectInstance as HardwareMechanismSingletonManager<*>)
+            val mech = (clazz.kotlin.companionObjectInstance as HardwareMechanismSingletonManager<*>)
                 .getInstance(hardwareMap, initData, telemetry) ?: continue
 
             for (button in mech.usedButtons) {

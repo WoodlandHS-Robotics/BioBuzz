@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.teamcode.misc.AprilTagDataKt
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 /**
@@ -52,7 +53,7 @@ class AprilTagModuleKt private constructor(hardwareMap: HardwareMap, initData: S
      * @return An array of objects, each signifying a detection of an AprilTag and containing data about it.
      */
     override fun poll(): List<AprilTagDataKt> {
-        return aprilTag.detections.map { AprilTagDataKt(it.id, it.ftcPose.y, it.hamming) }
+        return aprilTag.detections.map { AprilTagDataKt(0, it.ftcPose.y, 0) }
     }
 
     companion object : SensorDeviceSingletonManager<AprilTagModuleKt>(::AprilTagModuleKt)
