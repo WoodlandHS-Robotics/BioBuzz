@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.misc
 
 import com.acmerobotics.dashboard.config.Config
-import com.acmerobotics.roadrunner.clamp
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -24,6 +23,8 @@ class PIDVelocityController(
     init {
         motor.mode = RunMode.RUN_WITHOUT_ENCODER
     }
+
+    private fun clamp(value: Double, min: Double, max: Double) = value.coerceIn(min, max)
 
     /**
      * Update the motor
