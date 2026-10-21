@@ -30,7 +30,13 @@ class LauncherKt private constructor(hardwareMap: HardwareMap, data: InitData, p
         telemetry.addData("RightTrigger", data.currentGamepadOne.right_trigger)
         flywheel.power = data.currentGamepadOne.right_trigger.toDouble()
     }
-    override val usedButtons = arrayOf(
-    GamepadButtons.GP1_RIGHT_TRIGGER,
-    )
+
+    override fun stop() {
+        flywheel.power = 0.0
+        converter.power = 0.0
     }
+
+    override val usedButtons = arrayOf(
+        GamepadButtons.GP1_RIGHT_TRIGGER,
+    )
+}

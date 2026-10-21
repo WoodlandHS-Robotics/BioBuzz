@@ -22,7 +22,12 @@ class IntakeKt private constructor(hardwareMap: HardwareMap, data: InitData, pri
         telemetry.addData("DpadUp", data.currentGamepadOne.left_trigger)
         intake.power = data.currentGamepadOne.left_trigger.toDouble()
     }
+
+    override fun stop() {
+        intake.power = 0.0
+    }
+
     override val usedButtons = arrayOf(
         GamepadButtons.GP1_LEFT_TRIGGER,
     )
-    }
+}

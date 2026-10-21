@@ -9,11 +9,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Tuning {
 
     /**
-     * Example Pinpoint configuration for mismatched odometry pods:
-     * Forward (X axis): Swing Arm pod
-     * Strafe (Y axis): 4-Bar pod
+     * Creates a PinpointConfig with physical geometry offsets.
+     *
+     * @param pinpointName hardwareMap name for the Pinpoint device (e.g. "pinpoint")
+     * @param xOffset physical perpendicular offset from center of rotation to Y pod line (inches)
+     * @param yOffset physical perpendicular offset from center of rotation to X pod line (inches)
+     * @param xReversed whether the forward (X) pod encoder direction is reversed
+     * @param yReversed whether the strafe (Y) pod encoder direction is reversed
+     * @return configured PinpointConfig instance
      */
-    public static PinpointConfig createMismatchedPinpointConfig(String pinpointName, double xOffset, double yOffset, boolean xReversed, boolean yReversed) {
+    public static PinpointConfig createPinpointConfig(String pinpointName, double xOffset, double yOffset, boolean xReversed, boolean yReversed) {
         return new PinpointConfig(c -> {
             c.name.set(pinpointName);
             c.xPodOffset.set(xOffset);
@@ -26,14 +31,16 @@ public class Tuning {
     }
 
     /**
-     * Creates a Localizer instance wrapped in ScaledPinpointLocalizer for 1 Swing Arm (X) and 1 4-Bar (Y) pod.
+     * Creates a Localizer instance for your robot's setup:
+     * - Forward / X axis: 4-Bar pod
+     * - Strafe / Y axis: Swing Arm pod
      */
-    public static Localizer createMismatchedLocalizer(HardwareMap hardwareMap, PinpointConfig config) {
+    public static Localizer createLocalizer(HardwareMap hardwareMap, PinpointConfig config) {
         return ScaledPinpointLocalizer.createForMismatchedPods(
                 hardwareMap,
                 config,
-                ScaledPinpointLocalizer.PodType.SWING_ARM,
-                ScaledPinpointLocalizer.PodType.FOUR_BAR
+                ScaledPinpointLocalizer.PodType.FOUR_BAR,
+                ScaledPinpointLocalizer.PodType.SWING_ARM
         );
     }
 }
