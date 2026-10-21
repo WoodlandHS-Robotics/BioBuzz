@@ -12,9 +12,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.util.*;
 
 public class PinpointTuner extends Procedure {
-    enum PodType {
+    public enum PodType {
         SWING_ARM,
         FOUR_BAR,
+        SWING_ARM_X_FOUR_BAR_Y,
+        FOUR_BAR_X_SWING_ARM_Y,
         CUSTOM
     }
     public PinpointTuner() {
@@ -48,7 +50,7 @@ public class PinpointTuner extends Procedure {
             result("podType", "Custom");
             result("ticksPerUnit", customPodScalar.getAsDouble());
         } else {
-            result("podType", podType.get() == PodType.SWING_ARM ? GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD : GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+            result("podType", getBasePodEnum(podType.get()));
         }
 
         result("xPodDirection", forwardPodReversed ? GoBildaPinpointDriver.EncoderDirection.REVERSED : GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -56,16 +58,51 @@ public class PinpointTuner extends Procedure {
         result("xPodOffset", offsets.get(0));
         result("yPodOffset", offsets.get(1));
 
-        code(Language.JAVA,"public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
-                "    c.name.set(\"" + pinpointName.get() + "\");\n" +
-                (customPodScalar.isPresent() ? "    c.ticksPerUnit.set(OptionalDouble.of(" + customPodScalar.getAsDouble() + "));\n" : "    c.podType.set(" + (podType.get() == PodType.SWING_ARM ? "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD" : "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD") + ");\n") +
-                "    c.xPodOffset.set(" + offsets.get(0) + ");\n" +
-                "    c.yPodOffset.set(" + offsets.get(1) + ");\n" +
-                "    c.xPodDirection.set(" + (forwardPodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
-                "    c.yPodDirection.set(" + (strafePodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
-                "    c.globalDistanceUnit.set(DistanceUnit.INCH);\n" +
-                "    c.offsetUnits.set(DistanceUnit.INCH);\n" +
-                "});");
+        if (podType.get() == PodType.SWING_ARM_X_FOUR_BAR_Y || podType.get() == PodType.FOUR_BAR_X_SWING_ARM_Y) {
+            String xType = (podType.get() == PodType.SWING_ARM_X_FOUR_BAR_Y) ? "SWING_ARM" : "FOUR_BAR";
+            String yType = (podType.get() == PodType.SWING_ARM_X_FOUR_BAR_Y) ? "FOUR_BAR" : "SWING_ARM";
+
+            code(Language.JAVA,
+                    "public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
+                    "    c.name.set(\"" + pinpointName.get() + "\");\n" +
+                    "    c.xPodOffset.set(" + offsets.get(0) + ");\n" +
+                    "    c.yPodOffset.set(" + offsets.get(1) + ");\n" +
+                    "    c.xPodDirection.set(" + (forwardPodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
+                    "    c.yPodDirection.set(" + (strafePodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
+                    "    c.globalDistanceUnit.set(DistanceUnit.INCH);\n" +
+                    "    c.offsetUnits.set(DistanceUnit.INCH);\n" +
+                    "});\n\n" +
+                    "public static Localizer createLocalizer(HardwareMap hardwareMap) {\n" +
+                    "    return ScaledPinpointLocalizer.createForMismatchedPods(\n" +
+                    "        hardwareMap,\n" +
+                    "        localizerConfig,\n" +
+                    "        ScaledPinpointLocalizer.PodType." + xType + ",\n" +
+                    "        ScaledPinpointLocalizer.PodType." + yType + "\n" +
+                    "    );\n" +
+                    "}"
+            );
+        } else {
+            code(Language.JAVA, "public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
+                    "    c.name.set(\"" + pinpointName.get() + "\");\n" +
+                    (customPodScalar.isPresent() ? "    c.ticksPerUnit.set(OptionalDouble.of(" + customPodScalar.getAsDouble() + "));\n" : "    c.podType.set(" + (podType.get() == PodType.SWING_ARM ? "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD" : "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD") + ");\n") +
+                    "    c.xPodOffset.set(" + offsets.get(0) + ");\n" +
+                    "    c.yPodOffset.set(" + offsets.get(1) + ");\n" +
+                    "    c.xPodDirection.set(" + (forwardPodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
+                    "    c.yPodDirection.set(" + (strafePodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
+                    "    c.globalDistanceUnit.set(DistanceUnit.INCH);\n" +
+                    "    c.offsetUnits.set(DistanceUnit.INCH);\n" +
+                    "});\n\n" +
+                    "public static Localizer createLocalizer(HardwareMap hardwareMap) {\n" +
+                    "    return new PinpointLocalizer(hardwareMap, localizerConfig);\n" +
+                    "}");
+        }
+    }
+
+    public static GoBildaPinpointDriver.GoBildaOdometryPods getBasePodEnum(PodType podType) {
+        if (podType == PodType.FOUR_BAR || podType == PodType.FOUR_BAR_X_SWING_ARM_Y) {
+            return GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
+        }
+        return GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD;
     }
 }
 
@@ -133,7 +170,7 @@ class PinpointForwardDirection extends TuningOpMode<Boolean> {
                 c.encoderResolutionUnit.set(DistanceUnit.INCH);
                 c.ticksPerUnit.set(OptionalDouble.of(customPodScalar.getAsDouble()));
             } else {
-                c.podType.set(podType == PinpointTuner.PodType.SWING_ARM ? GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD : GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+                c.podType.set(PinpointTuner.getBasePodEnum(podType));
             }
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
@@ -184,7 +221,7 @@ class PinpointStrafeDirection extends TuningOpMode<Boolean> {
                 c.encoderResolutionUnit.set(DistanceUnit.INCH);
                 c.ticksPerUnit.set(OptionalDouble.of(customPodScalar.getAsDouble()));
             } else {
-                c.podType.set(podType == PinpointTuner.PodType.SWING_ARM ? GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD : GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+                c.podType.set(PinpointTuner.getBasePodEnum(podType));
             }
         });
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, config);
@@ -210,7 +247,7 @@ class PinpointStrafeDirection extends TuningOpMode<Boolean> {
 class PinpointOffsets extends TuningOpMode<List<Double>> {
     String name;
     PinpointTuner.PodType podType;
-    OptionalDouble customPodScalar =  OptionalDouble.empty();
+    OptionalDouble customPodScalar = OptionalDouble.empty();
     boolean forwardPodReversed, strafePodReversed;
     private Pose previous = Pose.zero();
 
@@ -239,7 +276,7 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
                 c.ticksPerUnit.set(OptionalDouble.of(customPodScalar.getAsDouble()));
                 c.resetMode.set(PinpointLocalizer.ResetMode.RESET_AND_RECALIBRATE_IMU);
             } else {
-                c.podType.set(podType == PinpointTuner.PodType.SWING_ARM ? GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD : GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+                c.podType.set(PinpointTuner.getBasePodEnum(podType));
             }
             c.xPodOffset.set(0.0);
             c.yPodOffset.set(0.0);
@@ -252,7 +289,6 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
         }
         localizer.setPose(Pose.zero());
         localizer.update();
-
 
         Thread.sleep(1000);
         waitForStart();
@@ -272,9 +308,24 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
         }
 
         if (localizer.pose().x() != Pose.zero().x() || localizer.pose().y() != Pose.zero().y()) {
-            previous =  localizer.pose();
+            previous = localizer.pose();
         }
 
-        return List.of(((-previous.y()) / 2.0), ((-previous.x()) / 2.0));
+        double rawXOffset = ((-previous.y()) / 2.0);
+        double rawYOffset = ((-previous.x()) / 2.0);
+
+        // Convert raw Pinpoint measured offsets to true physical robot geometry offsets if mismatched pods are used
+        double physicalXOffset = rawXOffset;
+        double physicalYOffset = rawYOffset;
+
+        if (podType == PinpointTuner.PodType.SWING_ARM_X_FOUR_BAR_Y) {
+            // Y is 4-Bar, Pinpoint base is Swingarm. Reported Y displacement during rotation was 1.5x actual.
+            physicalXOffset = rawXOffset * (2.0 / 3.0);
+        } else if (podType == PinpointTuner.PodType.FOUR_BAR_X_SWING_ARM_Y) {
+            // X is Swingarm, Pinpoint base is 4-Bar. Reported X displacement during rotation was 2/3 actual.
+            physicalYOffset = rawYOffset * 1.5;
+        }
+
+        return List.of(physicalXOffset, physicalYOffset);
     }
 }
