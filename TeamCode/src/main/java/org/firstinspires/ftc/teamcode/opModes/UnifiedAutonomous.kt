@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants
+import org.firstinspires.ftc.teamcode.pedro.Constants
 import org.firstinspires.ftc.teamcode.sensor.LimelightKt
 import org.firstinspires.ftc.teamcode.sensor.SensorDeviceKt
 import com.pedropathing.api.Paths.line
@@ -25,7 +25,7 @@ open class UnifiedAutonomous : LinearOpMode() {
     private lateinit var follower: Follower
 
     override fun runOpMode() {
-        follower = Constants.createFollower(hardwareMap)
+        follower = Constants.create(hardwareMap)
         follower.setPose(currentLocation.startPose)
 
         /* =========================================================================
