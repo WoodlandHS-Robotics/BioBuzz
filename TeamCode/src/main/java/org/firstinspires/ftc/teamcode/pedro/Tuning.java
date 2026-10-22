@@ -5,7 +5,6 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.pedropathing.revhub.drivetrains.Mecanum;
-import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.tuning.autotune.Procedure;
 import com.pedropathing.tuning.autotune.Tuner;
 
@@ -60,12 +59,18 @@ public class Tuning {
         return new MecanumTuner();
     }
     @Tuner
-    public  static Procedure tests() {
-        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig));
+    public static Procedure tests() {
+        return new Tests(
+                hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig),
+                Constants::createLocalizer
+        );
     }
 
     @Tuner
     public static Procedure foresightTuner() {
-        return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig), hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig));
+        return new ForesightTuner(
+                Constants::createLocalizer,
+                hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig)
+        );
     }
 }

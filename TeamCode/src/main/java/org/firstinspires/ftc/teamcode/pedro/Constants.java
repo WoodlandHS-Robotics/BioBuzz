@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pedro;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
+import com.pedropathing.localization.Localizer;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
 import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
@@ -18,7 +19,7 @@ public class Constants {
 
     public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
         c.name.set("pinpoint");
-        c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         c.xPodOffset.set(-1.75);
         c.yPodOffset.set(-4.0);
         c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -26,6 +27,15 @@ public class Constants {
         c.globalDistanceUnit.set(DistanceUnit.INCH);
         c.offsetUnits.set(DistanceUnit.INCH);
     });
+
+    public static Localizer createLocalizer(HardwareMap hardwareMap) {
+        return ScaledPinpointLocalizer.createForMismatchedPods(
+                hardwareMap,
+                localizerConfig,
+                ScaledPinpointLocalizer.PodType.FOUR_BAR,
+                ScaledPinpointLocalizer.PodType.SWING_ARM
+        );
+    }
 
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
         c.frontLeftName.set("leftFront");
