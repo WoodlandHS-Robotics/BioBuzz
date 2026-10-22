@@ -4,7 +4,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
-import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -18,28 +17,27 @@ public class Constants {
     }
 
     /**
-     * Pinpoint configuration configured for mismatched odometry pods:
-     * - Forward (X axis): 4-Bar pod (Base hardware podType = goBILDA_4_BAR_POD)
-     * - Strafe (Y axis): Swing Arm pod (xPodOffset adjusted by 1/1.5 for Pinpoint firmware)
+     * Mismatched Pinpoint odometry pod configuration:
+     * - Forward (X axis): 4-Bar pod
+     * - Strafe (Y axis): Swing Arm pod
      */
-    public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
-        c.name.set("pinpoint");
-        c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        c.xPodOffset.set(-1.75 / 1.5); // Adjusted for Swingarm strafe pod
-        c.yPodOffset.set(-4.0);        // 4-Bar forward pod
-        c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        c.globalDistanceUnit.set(DistanceUnit.INCH);
-        c.offsetUnits.set(DistanceUnit.INCH);
-    });
+    public static MismatchedPinpointConfig localizerConfig = new MismatchedPinpointConfig(
+            "pinpoint",
+            ScaledPinpointLocalizer.PodType.FOUR_BAR,  // Forward (X axis)
+            ScaledPinpointLocalizer.PodType.SWING_ARM, // Strafe (Y axis)
+            -1.75, // Physical xPodOffset (inches)
+            -4.0,  // Physical yPodOffset (inches)
+            GoBildaPinpointDriver.EncoderDirection.FORWARD,
+            GoBildaPinpointDriver.EncoderDirection.FORWARD,
+            DistanceUnit.INCH,
+            DistanceUnit.INCH
+    );
 
     /**
-     * Creates a Localizer instance wrapped in ScaledPinpointLocalizer:
-     * - X scale = 1.0 (4-Bar pod)
-     * - Y scale = 1.5 (Swing Arm pod)
+     * Creates a Localizer instance configured for mismatched odometry pods.
      */
     public static Localizer createLocalizer(HardwareMap hardwareMap) {
-        return new ScaledPinpointLocalizer(hardwareMap, localizerConfig, 1.0, 1.5);
+        return localizerConfig.createLocalizer(hardwareMap);
     }
 
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {

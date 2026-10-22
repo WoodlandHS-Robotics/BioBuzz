@@ -63,22 +63,19 @@ public class PinpointTuner extends Procedure {
             String yType = (podType.get() == PodType.SWING_ARM_X_FOUR_BAR_Y) ? "FOUR_BAR" : "SWING_ARM";
 
             code(Language.JAVA,
-                    "public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
-                    "    c.name.set(\"" + pinpointName.get() + "\");\n" +
-                    "    c.xPodOffset.set(" + offsets.get(0) + ");\n" +
-                    "    c.yPodOffset.set(" + offsets.get(1) + ");\n" +
-                    "    c.xPodDirection.set(" + (forwardPodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
-                    "    c.yPodDirection.set(" + (strafePodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ");\n" +
-                    "    c.globalDistanceUnit.set(DistanceUnit.INCH);\n" +
-                    "    c.offsetUnits.set(DistanceUnit.INCH);\n" +
-                    "});\n\n" +
+                    "public static MismatchedPinpointConfig localizerConfig = new MismatchedPinpointConfig(\n" +
+                    "    \"" + pinpointName.get() + "\",\n" +
+                    "    ScaledPinpointLocalizer.PodType." + xType + ",\n" +
+                    "    ScaledPinpointLocalizer.PodType." + yType + ",\n" +
+                    "    " + offsets.get(0) + ",\n" +
+                    "    " + offsets.get(1) + ",\n" +
+                    "    " + (forwardPodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ",\n" +
+                    "    " + (strafePodReversed ? "GoBildaPinpointDriver.EncoderDirection.REVERSED" : "GoBildaPinpointDriver.EncoderDirection.FORWARD") + ",\n" +
+                    "    DistanceUnit.INCH,\n" +
+                    "    DistanceUnit.INCH\n" +
+                    ");\n\n" +
                     "public static Localizer createLocalizer(HardwareMap hardwareMap) {\n" +
-                    "    return ScaledPinpointLocalizer.createForMismatchedPods(\n" +
-                    "        hardwareMap,\n" +
-                    "        localizerConfig,\n" +
-                    "        ScaledPinpointLocalizer.PodType." + xType + ",\n" +
-                    "        ScaledPinpointLocalizer.PodType." + yType + "\n" +
-                    "    );\n" +
+                    "    return localizerConfig.createLocalizer(hardwareMap);\n" +
                     "}"
             );
         } else {
