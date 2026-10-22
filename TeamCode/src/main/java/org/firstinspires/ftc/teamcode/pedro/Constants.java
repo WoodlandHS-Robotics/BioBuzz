@@ -17,24 +17,29 @@ public class Constants {
         return null;
     }
 
+    /**
+     * Pinpoint configuration configured for mismatched odometry pods:
+     * - Forward (X axis): 4-Bar pod (Base hardware podType = goBILDA_4_BAR_POD)
+     * - Strafe (Y axis): Swing Arm pod (xPodOffset adjusted by 1/1.5 for Pinpoint firmware)
+     */
     public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
         c.name.set("pinpoint");
         c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        c.xPodOffset.set(-1.75);
-        c.yPodOffset.set(-4.0);
+        c.xPodOffset.set(-1.75 / 1.5); // Adjusted for Swingarm strafe pod
+        c.yPodOffset.set(-4.0);        // 4-Bar forward pod
         c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
         c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
         c.globalDistanceUnit.set(DistanceUnit.INCH);
         c.offsetUnits.set(DistanceUnit.INCH);
     });
 
+    /**
+     * Creates a Localizer instance wrapped in ScaledPinpointLocalizer:
+     * - X scale = 1.0 (4-Bar pod)
+     * - Y scale = 1.5 (Swing Arm pod)
+     */
     public static Localizer createLocalizer(HardwareMap hardwareMap) {
-        return ScaledPinpointLocalizer.createForMismatchedPods(
-                hardwareMap,
-                localizerConfig,
-                ScaledPinpointLocalizer.PodType.FOUR_BAR,
-                ScaledPinpointLocalizer.PodType.SWING_ARM
-        );
+        return new ScaledPinpointLocalizer(hardwareMap, localizerConfig, 1.0, 1.5);
     }
 
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
