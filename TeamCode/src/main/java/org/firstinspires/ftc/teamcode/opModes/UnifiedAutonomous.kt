@@ -80,12 +80,10 @@ open class UnifiedAutonomous : LinearOpMode() {
 
         waitForStart()
 
-       // follower.follow(path1)
-       // var followedSecond = false
+        follower.follow(autoPath)
 
         while (opModeIsActive() && follower.isBusy()) {
             follower.update()
-            follower.follow(autoPath)
 
             telemetryM.addData("X", follower.pose().x())
             telemetryM.addData("Y", follower.pose().y())
