@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
+import com.pedropathing.api.Paths
 import com.pedropathing.follower.Follower
 import com.pedropathing.math.Pose
 import com.pedropathing.paths.Path
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.sensor.LimelightKt
 import org.firstinspires.ftc.teamcode.sensor.SensorDeviceKt
 import com.pedropathing.api.Paths.line
 import com.pedropathing.api.Paths.curve
+import com.pedropathing.api.PoseFactory
 
 @Autonomous(name="Automatic Autonomous", group="Competition")
 @Disabled
@@ -25,9 +27,6 @@ open class UnifiedAutonomous : LinearOpMode() {
     private lateinit var follower: Follower
 
     override fun runOpMode() {
-        follower = Constants.create(hardwareMap)
-        follower.setPose(currentLocation.startPose)
-
         /* =========================================================================
          * PEDRO PATHING PATH EXAMPLES & COMMENTED GUIDE:
          *
@@ -47,29 +46,46 @@ open class UnifiedAutonomous : LinearOpMode() {
          *    }
          * ========================================================================= */
 
-        val path1 = line(currentLocation.startPose, Pose(-6.0, -30.5, 0.0)).constant(0.0)
-        val path2Blue = line(Pose(-6.0, -30.5, 0.0), Pose(-12.0, -31.0, Math.PI)).constant(Math.PI)
-        val path2Red = line(Pose(-6.0, -30.5, 0.0), Pose(-12.0, -31.0, -Math.PI)).constant(-Math.PI)
+        follower = Constants.create(hardwareMap)
+        follower.setPose(currentLocation.startPose)
+
+        val poseFactory = PoseFactory.degrees()
+        var dest: Pose
+        var autoPath: Path
+
+        when (currentLocation) {
+            Locations.BlueClose -> {
+                dest = poseFactory.of(68.5067, 17.5322, 0.0)
+                autoPath = Paths.curve(currentLocation.startPose, dest)
+            }
+            Locations.BlueFar -> {
+                dest = poseFactory.of(112.0427, 101.4671, 0.0)
+                autoPath = Paths.line(currentLocation.startPose, dest)
+            }
+            Locations.RedClose -> {
+                dest = poseFactory.of(12.0, 94.0, 210.0)
+                autoPath = Paths.curve(currentLocation.startPose, dest)
+            }
+            Locations.RedFar -> {
+                dest = poseFactory.of(12.0, 94.0, 130.0)
+                autoPath = Paths.line(currentLocation.startPose, dest)
+            }
+            else -> {
+                autoPath = Paths.line(currentLocation.startPose, currentLocation.startPose)
+            }
+        }
 
         telemetryM.addData("INIT STATUS", "READY")
         telemetryM.update()
 
         waitForStart()
 
-        follower.follow(path1)
-        var followedSecond = false
+       // follower.follow(path1)
+       // var followedSecond = false
 
-        while (opModeIsActive()) {
+        while (opModeIsActive() && follower.isBusy()) {
             follower.update()
-
-            if (follower.atParametricEnd() && !followedSecond) {
-                followedSecond = true
-                if (currentLocation == Locations.BlueFar || currentLocation == Locations.BlueClose) {
-                    follower.follow(path2Blue)
-                } else if (currentLocation == Locations.RedFar || currentLocation == Locations.RedClose) {
-                    follower.follow(path2Red)
-                }
-            }
+            follower.follow(autoPath)
 
             telemetryM.addData("X", follower.pose().x())
             telemetryM.addData("Y", follower.pose().y())
@@ -79,10 +95,10 @@ open class UnifiedAutonomous : LinearOpMode() {
     }
 
     protected enum class Locations(val teamColor: TeamColor, val startPose: Pose) {
-        BlueClose(TeamColor.BLUE, Pose(0.0, 0.0, 0.0)),
-        BlueFar(TeamColor.BLUE, Pose(0.0, 0.0, 0.0)),
-        RedClose(TeamColor.RED, Pose(0.0, 0.0, 0.0)),
-        RedFar(TeamColor.RED, Pose(0.0, 0.0, 0.0)),
+        BlueClose(TeamColor.BLUE, Pose(83.0, 9.0, 90.0)),
+        BlueFar(TeamColor.BLUE, Pose(83.0, 133.0, -90.0)),
+        RedClose(TeamColor.RED, Pose(60.0, 133.0, -90.0)),
+        RedFar(TeamColor.RED, Pose(56.0, 8.0, 90.0)),
         Unknown(TeamColor.UNKNOWN, Pose(0.0, 0.0, 0.0))
     }
 

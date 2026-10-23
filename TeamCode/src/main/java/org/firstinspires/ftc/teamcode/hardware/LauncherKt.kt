@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware
 
 import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismKt
@@ -16,28 +17,35 @@ class LauncherKt private constructor(hardwareMap: HardwareMap, data: InitData, p
     companion object : HardwareMechanismSingletonManager<LauncherKt>(::LauncherKt)
 
     private val flywheel: DcMotorEx = createDefaultMotor(hardwareMap,"FlywheelMotor")
-    private val converter: DcMotorEx = createDefaultMotor(hardwareMap,"ConverterMotor")
+    private val kicker: Servo = hardwareMap.get(Servo::class.java, "kickerServo")
 
 
     override fun start() {
-        telemetry.addData("Launcher init started", "")
+        kicker.position = 0.5
     }
 
     override fun run(data: RunData) {
         telemetry.addData("RightTrigger", data.currentGamepadOne.right_trigger)
         if (data.currentGamepadOne.right_trigger >= 0.25) {
-            flywheel.velocity = -100000.0
-        } else {
+            telemetry.addData("kicker pos", kicker.position)
+            telemetry.addData("flywheel vel", flywheel.velocity)
+            flywheel.velocity = -1700.0
+            if (flywheel.velocity  <= -1675) {
+                kicker.position = 1.0
+            }
+        }
+        else {
+            kicker.position = 0.5
             flywheel.velocity = 0.0
         }
     }
 
     override fun stop() {
         flywheel.power = 0.0
-        converter.power = 0.0
     }
 
     override val usedButtons = arrayOf(
         GamepadButtons.GP1_RIGHT_TRIGGER,
+        GamepadButtons.GP1_RIGHT_BUMPER,
     )
 }

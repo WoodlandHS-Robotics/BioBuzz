@@ -13,8 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static Follower create(HardwareMap h) {
-        // return new Follower(Drivetrain, Localizer, Foresight);
-        return null;
+        return new Follower(drivetrainConfig, localizerConfig, null);
     }
 
     /**
